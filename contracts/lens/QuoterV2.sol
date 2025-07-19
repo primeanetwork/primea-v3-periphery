@@ -38,7 +38,7 @@ contract QuoterV2 is IQuoterV2, IPrimeaV3SwapCallback, PeripheryImmutableState {
     }
 
     /// @inheritdoc IPrimeaV3SwapCallback
-    function PrimeaV3SwapCallback(
+    function primeaV3SwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
         bytes memory path
@@ -222,10 +222,14 @@ contract QuoterV2 is IQuoterV2, IPrimeaV3SwapCallback, PeripheryImmutableState {
             )
         {} catch (bytes memory reason) {
             gasEstimate = gasBefore - gasleft();
-            if (params.sqrtPriceLimitX96 == 0) delete amountOutCached; // clear cache
-            return handleRevert(reason, pool, gasEstimate);
+            if (params.sqrtPriceLimitX96 == 0) delete amountOutCached;
+            (amountIn, sqrtPriceX96After, int24 tickAfter) = parseRevertReason(reason);
+            (, int24 tickBefore, , , , , ) = pool.slot0();
+            uint32 initializedTicksCrossed = pool.countInitializedTicksCrossed(tickBefore, tickAfter);
+            return (amountIn, sqrtPriceX96After, initializedTicksCrossed, gasEstimate);
         }
     }
+
 
     function quoteExactOutput(bytes memory path, uint256 amountOut)
         public
@@ -270,4 +274,5 @@ contract QuoterV2 is IQuoterV2, IPrimeaV3SwapCallback, PeripheryImmutableState {
             }
         }
     }
+
 }

@@ -144,6 +144,7 @@ contract Quoter is IQuoter, IPrimeaV3SwapCallback, PeripheryImmutableState {
                 abi.encodePacked(tokenOut, fee, tokenIn)
             )
         {} catch (bytes memory reason) {
+            uint256 result = parseRevertReason(reason);
             if (sqrtPriceLimitX96 == 0) delete amountOutCached; // clear cache
             return parseRevertReason(reason);
         }
@@ -167,4 +168,5 @@ contract Quoter is IQuoter, IPrimeaV3SwapCallback, PeripheryImmutableState {
             }
         }
     }
+
 }

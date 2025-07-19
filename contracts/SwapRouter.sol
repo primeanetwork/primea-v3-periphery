@@ -54,34 +54,27 @@ contract SwapRouter is
     }
 
     /// @inheritdoc IPrimeaV3SwapCallback
-    function PrimeaV3SwapCallback(
+    // Handles swap callback for both exact input and exact output
+    function primeaV3SwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
-        bytes calldata _data
+        bytes calldata data
     ) external override {
-        require(amount0Delta > 0 || amount1Delta > 0); // swaps entirely within 0-liquidity regions are not supported
-        SwapCallbackData memory data = abi.decode(_data, (SwapCallbackData));
-        (address tokenIn, address tokenOut, uint24 fee) = data.path.decodeFirstPool();
+        require(amount0Delta > 0 || amount1Delta > 0, "Zero swap");
+
+        SwapCallbackData memory decoded = abi.decode(data, (SwapCallbackData));
+        (address tokenIn, address tokenOut, uint24 fee) = decoded.path.decodeFirstPool();
+
         CallbackValidation.verifyCallback(factory, tokenIn, tokenOut, fee);
 
-        (bool isExactInput, uint256 amountToPay) =
-            amount0Delta > 0
-                ? (tokenIn < tokenOut, uint256(amount0Delta))
-                : (tokenOut < tokenIn, uint256(amount1Delta));
-        if (isExactInput) {
-            pay(tokenIn, data.payer, msg.sender, amountToPay);
-        } else {
-            // either initiate the next swap or pay
-            if (data.path.hasMultiplePools()) {
-                data.path = data.path.skipToken();
-                exactOutputInternal(amountToPay, msg.sender, 0, data);
-            } else {
-                amountInCached = amountToPay;
-                tokenIn = tokenOut; // swap in/out because exact output swaps are reversed
-                pay(tokenIn, data.payer, msg.sender, amountToPay);
-            }
-        }
+        uint256 amountToPay =
+            amount0Delta > 0 ? uint256(amount0Delta) : uint256(amount1Delta);
+        address tokenToPay =
+            amount0Delta > 0 ? tokenIn : tokenOut;
+
+        TransferHelper.safeTransferFrom(tokenToPay, decoded.payer, msg.sender, amountToPay);
     }
+
 
     /// @dev Performs a single exact input swap
     function exactInputInternal(
@@ -241,4 +234,13 @@ contract SwapRouter is
         require(amountIn <= params.amountInMaximum, 'Too much requested');
         amountInCached = DEFAULT_AMOUNT_IN_CACHED;
     }
+
+    function primeaV3FlashCallback(
+        uint256 fee0,
+        uint256 fee1,
+        bytes calldata data
+    ) external override {
+        revert("primeaV3FlashCallback not implemented");
+    }
+
 }

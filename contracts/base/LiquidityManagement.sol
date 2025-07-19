@@ -21,19 +21,6 @@ abstract contract LiquidityManagement is IPrimeaV3MintCallback, PeripheryImmutab
         address payer;
     }
 
-    /// @inheritdoc IPrimeaV3MintCallback
-    function PrimeaV3MintCallback(
-        uint256 amount0Owed,
-        uint256 amount1Owed,
-        bytes calldata data
-    ) external override {
-        MintCallbackData memory decoded = abi.decode(data, (MintCallbackData));
-        CallbackValidation.verifyCallback(factory, decoded.poolKey);
-
-        if (amount0Owed > 0) pay(decoded.poolKey.token0, decoded.payer, msg.sender, amount0Owed);
-        if (amount1Owed > 0) pay(decoded.poolKey.token1, decoded.payer, msg.sender, amount1Owed);
-    }
-
     struct AddLiquidityParams {
         address token0;
         address token1;
@@ -87,4 +74,31 @@ abstract contract LiquidityManagement is IPrimeaV3MintCallback, PeripheryImmutab
 
         require(amount0 >= params.amount0Min && amount1 >= params.amount1Min, 'Price slippage check');
     }
+    
+    /// @inheritdoc IPrimeaV3MintCallback
+    function primeaV3MintCallback(
+        uint256 amount0Owed,
+        uint256 amount1Owed,
+        bytes calldata data
+    ) external override {
+        MintCallbackData memory decoded = abi.decode(data, (MintCallbackData));
+        CallbackValidation.verifyCallback(factory, decoded.poolKey);
+
+        if (amount0Owed > 0) {
+            TransferHelper.safeTransferFrom(decoded.poolKey.token0, decoded.payer, msg.sender, amount0Owed);
+        }
+
+        if (amount1Owed > 0) {
+            TransferHelper.safeTransferFrom(decoded.poolKey.token1, decoded.payer, msg.sender, amount1Owed);
+        }
+    }
+
+    function primeaV3FlashCallback(
+        uint256 fee0,
+        uint256 fee1,
+        bytes calldata data
+    ) external override {
+        revert("primeaV3FlashCallback not implemented");
+    }
+
 }

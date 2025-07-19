@@ -28,7 +28,6 @@ contract PairFlash is IPrimeaV3FlashCallback, PeripheryPayments {
         swapRouter = _swapRouter;
     }
 
-    // fee2 and fee3 are the two other fees associated with the two other pools of token0 and token1
     struct FlashCallbackData {
         uint256 amount0;
         uint256 amount1;
@@ -38,12 +37,8 @@ contract PairFlash is IPrimeaV3FlashCallback, PeripheryPayments {
         uint24 poolFee3;
     }
 
-    /// @param fee0 The fee from calling flash for token0
-    /// @param fee1 The fee from calling flash for token1
-    /// @param data The data needed in the callback passed as FlashCallbackData from `initFlash`
-    /// @notice implements the callback called from flash
-    /// @dev fails if the flash is not profitable, meaning the amountOut from the flash is less than the amount borrowed
-    function PrimeaV3FlashCallback(
+    /// @inheritdoc IPrimeaV3FlashCallback
+    function primeaV3FlashCallback(
         uint256 fee0,
         uint256 fee1,
         bytes calldata data
@@ -54,61 +49,48 @@ contract PairFlash is IPrimeaV3FlashCallback, PeripheryPayments {
         address token0 = decoded.poolKey.token0;
         address token1 = decoded.poolKey.token1;
 
-        // profitability parameters - we must receive at least the required payment from the arbitrage swaps
-        // exactInputSingle will fail if this amount not met
-        uint256 amount0Min = LowGasSafeMath.add(decoded.amount0, fee0);
-        uint256 amount1Min = LowGasSafeMath.add(decoded.amount1, fee1);
+        uint256 amount0Min = decoded.amount0.add(fee0);
+        uint256 amount1Min = decoded.amount1.add(fee1);
 
-        // call exactInputSingle for swapping token1 for token0 in pool with fee2
+        // 1. Swap token1 → token0 (using poolFee2)
         TransferHelper.safeApprove(token1, address(swapRouter), decoded.amount1);
-        uint256 amountOut0 =
-            swapRouter.exactInputSingle(
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: token1,
-                    tokenOut: token0,
-                    fee: decoded.poolFee2,
-                    recipient: address(this),
-                    deadline: block.timestamp,
-                    amountIn: decoded.amount1,
-                    amountOutMinimum: amount0Min,
-                    sqrtPriceLimitX96: 0
-                })
-            );
+        uint256 amountOut0 = swapRouter.exactInputSingle(
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: token1,
+                tokenOut: token0,
+                fee: decoded.poolFee2,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountIn: decoded.amount1,
+                amountOutMinimum: amount0Min,
+                sqrtPriceLimitX96: 0
+            })
+        );
 
-        // call exactInputSingle for swapping token0 for token 1 in pool with fee3
+        // 2. Swap token0 → token1 (using poolFee3)
         TransferHelper.safeApprove(token0, address(swapRouter), decoded.amount0);
-        uint256 amountOut1 =
-            swapRouter.exactInputSingle(
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: token0,
-                    tokenOut: token1,
-                    fee: decoded.poolFee3,
-                    recipient: address(this),
-                    deadline: block.timestamp,
-                    amountIn: decoded.amount0,
-                    amountOutMinimum: amount1Min,
-                    sqrtPriceLimitX96: 0
-                })
-            );
+        uint256 amountOut1 = swapRouter.exactInputSingle(
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: token0,
+                tokenOut: token1,
+                fee: decoded.poolFee3,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountIn: decoded.amount0,
+                amountOutMinimum: amount1Min,
+                sqrtPriceLimitX96: 0
+            })
+        );
 
-        // pay the required amounts back to the pair
+        // 3. Repay the flash loan
         if (amount0Min > 0) pay(token0, address(this), msg.sender, amount0Min);
         if (amount1Min > 0) pay(token1, address(this), msg.sender, amount1Min);
 
-        // if profitable pay profits to payer
-        if (amountOut0 > amount0Min) {
-            uint256 profit0 = amountOut0 - amount0Min;
-            pay(token0, address(this), decoded.payer, profit0);
-        }
-        if (amountOut1 > amount1Min) {
-            uint256 profit1 = amountOut1 - amount1Min;
-            pay(token1, address(this), decoded.payer, profit1);
-        }
+        // 4. Transfer profit (if any)
+        if (amountOut0 > amount0Min) pay(token0, address(this), decoded.payer, amountOut0 - amount0Min);
+        if (amountOut1 > amount1Min) pay(token1, address(this), decoded.payer, amountOut1 - amount1Min);
     }
 
-    //fee1 is the fee of the pool from the initial borrow
-    //fee2 is the fee of the first pool to arb from
-    //fee3 is the fee of the second pool to arb from
     struct FlashParams {
         address token0;
         address token1;
@@ -119,17 +101,15 @@ contract PairFlash is IPrimeaV3FlashCallback, PeripheryPayments {
         uint24 fee3;
     }
 
-    /// @param params The parameters necessary for flash and the callback, passed in as FlashParams
-    /// @notice Calls the pools flash function with data needed in `PrimeaV3FlashCallback`
     function initFlash(FlashParams memory params) external {
-        PoolAddress.PoolKey memory poolKey =
-            PoolAddress.PoolKey({token0: params.token0, token1: params.token1, fee: params.fee1});
+        PoolAddress.PoolKey memory poolKey = PoolAddress.PoolKey({
+            token0: params.token0,
+            token1: params.token1,
+            fee: params.fee1
+        });
+
         IPrimeaV3Pool pool = IPrimeaV3Pool(PoolAddress.computeAddress(factory, poolKey));
-        // recipient of borrowed amounts
-        // amount of token0 requested to borrow
-        // amount of token1 requested to borrow
-        // need amount 0 and amount1 in callback to pay back pool
-        // recipient of flash should be THIS contract
+
         pool.flash(
             address(this),
             params.amount0,

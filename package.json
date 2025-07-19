@@ -32,7 +32,7 @@
     "@openzeppelin/contracts": "3.4.2-solc-0.7",
     "@uniswap/lib": "^4.0.1-alpha",
     "@uniswap/v2-core": "^1.0.1",
-    "@primea/v3-core": "file:../primea-v3-core",
+    "@primea/v3-core": "link:../primea-v3-core",
     "base64-sol": "1.0.1"
   },
   "devDependencies": {

@@ -36,64 +36,82 @@ contract TestPrimeaV3Callee is IPrimeaV3SwapCallback, IPrimeaV3MintCallback {
         IPrimeaV3Pool(pool).swap(recipient, false, -amount0Out.toInt256(), sqrtPriceLimitX96, _encode(msg.sender));
     }
 
-    /// @inheritdoc IPrimeaV3MintCallback
-    function primeaV3MintCallback(
-        uint256 amount0,
-        uint256 amount1,
-        bytes calldata data
-    ) external {
-        (address payer, address token0, address token1, uint24 fee) = abi.decode(data, (address, address, address, uint24));
-        PoolAddress.PoolKey memory key = PoolAddress.PoolKey({
-            token0: token0,
-            token1: token1,
-            fee: fee
-        });
-        require(msg.sender == PoolAddress.computeAddress(factory, key), "Invalid pool caller");
-
-        if (amount0 > 0) {
-            TransferHelper.safeTransferFrom(token0, payer, msg.sender, amount0);
-        }
-        if (amount1 > 0) {
-            TransferHelper.safeTransferFrom(token1, payer, msg.sender, amount1);
-        }
-    }
-
     /// @inheritdoc IPrimeaV3SwapCallback
     function primeaV3SwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
         bytes calldata data
-    ) external {
-        (address payer, address token0, address token1, uint24 fee) = abi.decode(data, (address, address, address, uint24));
+    ) external override {
+        (address payer, address token0, address token1, uint24 fee) =
+            abi.decode(data, (address, address, address, uint24));
+
         PoolAddress.PoolKey memory key = PoolAddress.PoolKey({
             token0: token0,
             token1: token1,
             fee: fee
         });
-        require(msg.sender == PoolAddress.computeAddress(factory, key), "Invalid pool caller");
+
+        require(
+            msg.sender == PoolAddress.computeAddress(factory, key),
+            "Invalid pool caller"
+        );
 
         if (amount0Delta > 0) {
-            TransferHelper.safeTransferFrom(token0, payer, msg.sender, uint256(amount0Delta));
+            TransferHelper.safeTransferFrom(
+                token0,
+                payer,
+                msg.sender,
+                uint256(amount0Delta)
+            );
         }
+
         if (amount1Delta > 0) {
-            TransferHelper.safeTransferFrom(token1, payer, msg.sender, uint256(amount1Delta));
+            TransferHelper.safeTransferFrom(
+                token1,
+                payer,
+                msg.sender,
+                uint256(amount1Delta)
+            );
         }
     }
 
-    function primeaV3FlashCallback(
-        uint256 fee0,
-        uint256 fee1,
+    /// @inheritdoc IPrimeaV3MintCallback
+    function primeaV3MintCallback(
+        uint256 amount0Owed,
+        uint256 amount1Owed,
         bytes calldata data
-    ) external {
-        revert("primeaV3FlashCallback not implemented");
+    ) external override {
+        (address payer, address token0, address token1, uint24 fee) =
+            abi.decode(data, (address, address, address, uint24));
+
+        PoolAddress.PoolKey memory key = PoolAddress.PoolKey({
+            token0: token0,
+            token1: token1,
+            fee: fee
+        });
+
+        require(
+            msg.sender == PoolAddress.computeAddress(factory, key),
+            "Invalid pool caller"
+        );
+
+        if (amount0Owed > 0) {
+            TransferHelper.safeTransferFrom(
+                token0,
+                payer,
+                msg.sender,
+                amount0Owed
+            );
+        }
+
+        if (amount1Owed > 0) {
+            TransferHelper.safeTransferFrom(
+                token1,
+                payer,
+                msg.sender,
+                amount1Owed
+            );
+        }
     }
 
-    /// Utility: ABI encode data for callbacks
-    function _encode(address payer) internal view returns (bytes memory) {
-        // Replace with actual pool data or use fixed token0, token1, fee for testing
-        address token0 = address(0); // placeholder
-        address token1 = address(0); // placeholder
-        uint24 fee = 3000;           // placeholder fee tier
-        return abi.encode(payer, token0, token1, fee);
-    }
 }

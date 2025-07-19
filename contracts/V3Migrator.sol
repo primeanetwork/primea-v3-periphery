@@ -3,7 +3,7 @@ pragma solidity =0.7.6;
 pragma abicoder v2;
 
 import '@primea/v3-core/contracts/libraries/LowGasSafeMath.sol';
-import '@uniswap/v2-core/contracts/interfaces/IPrimeaV2Pair.sol';
+import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 
 import './interfaces/INonfungiblePositionManager.sol';
 
@@ -39,8 +39,8 @@ contract V3Migrator is IV3Migrator, PeripheryImmutableState, PoolInitializer, Mu
         require(params.percentageToMigrate <= 100, 'Percentage too large');
 
         // burn v2 liquidity to this address
-        IPrimeaV2Pair(params.pair).transferFrom(msg.sender, params.pair, params.liquidityToMigrate);
-        (uint256 amount0V2, uint256 amount1V2) = IPrimeaV2Pair(params.pair).burn(address(this));
+        IUniswapV2Pair(params.pair).transferFrom(msg.sender, params.pair, params.liquidityToMigrate);
+        (uint256 amount0V2, uint256 amount1V2) = IUniswapV2Pair(params.pair).burn(address(this));
 
         // calculate the amounts to migrate to v3
         uint256 amount0V2ToMigrate = amount0V2.mul(params.percentageToMigrate) / 100;

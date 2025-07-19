@@ -2,7 +2,7 @@ import { Fixture } from 'ethereum-waffle'
 import { constants, Contract, Wallet } from 'ethers'
 import { ethers, waffle } from 'hardhat'
 import {
-  IPrimeaV2Pair,
+  IUniswapV2Pair,
   IPrimeaV3Factory,
   IWETH9,
   MockTimeNonfungiblePositionManager,
@@ -63,7 +63,7 @@ describe('V3Migrator', () => {
   let weth9: IWETH9
   let nft: MockTimeNonfungiblePositionManager
   let migrator: V3Migrator
-  let pair: IPrimeaV2Pair
+  let pair: IUniswapV2Pair
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -85,7 +85,7 @@ describe('V3Migrator', () => {
 
     const pairAddress = await factoryV2.getPair(token.address, weth9.address)
 
-    pair = new ethers.Contract(pairAddress, PAIR_V2_ABI, wallet) as IPrimeaV2Pair
+    pair = new ethers.Contract(pairAddress, PAIR_V2_ABI, wallet) as IUniswapV2Pair
 
     await token.transfer(pair.address, 10000)
     await weth9.transfer(pair.address, 10000)

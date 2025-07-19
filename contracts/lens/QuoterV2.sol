@@ -223,7 +223,7 @@ contract QuoterV2 is IQuoterV2, IPrimeaV3SwapCallback, PeripheryImmutableState {
         {} catch (bytes memory reason) {
             gasEstimate = gasBefore - gasleft();
             if (params.sqrtPriceLimitX96 == 0) delete amountOutCached;
-            (amountIn, sqrtPriceX96After, int24 tickAfter) = parseRevertReason(reason);
+            (uint256 amountIn, uint160 sqrtPriceX96After, int24 tickAfter) = parseRevertReason(reason);
             (, int24 tickBefore, , , , , ) = pool.slot0();
             uint32 initializedTicksCrossed = pool.countInitializedTicksCrossed(tickBefore, tickAfter);
             return (amountIn, sqrtPriceX96After, initializedTicksCrossed, gasEstimate);

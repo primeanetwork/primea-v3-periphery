@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.7.6;
 
 import '@primea/v3-core/contracts/interfaces/IPrimeaV3Pool.sol';
 import '@primea/v3-core/contracts/interfaces/callback/IPrimeaV3SwapCallback.sol';

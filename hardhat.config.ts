@@ -6,6 +6,7 @@ import "@nomiclabs/hardhat-waffle";
 import "hardhat-typechain";
 import "hardhat-watcher";
 import * as dotenv from "dotenv";
+
 dotenv.config();
 
 const LOW_OPTIMIZER_COMPILER_SETTINGS = {
@@ -14,7 +15,7 @@ const LOW_OPTIMIZER_COMPILER_SETTINGS = {
     evmVersion: "istanbul",
     optimizer: {
       enabled: true,
-      runs: 2_000,
+      runs: 2000,
     },
     metadata: {
       bytecodeHash: "none",
@@ -28,7 +29,7 @@ const LOWEST_OPTIMIZER_COMPILER_SETTINGS = {
     evmVersion: "istanbul",
     optimizer: {
       enabled: true,
-      runs: 1_000,
+      runs: 1000,
     },
     metadata: {
       bytecodeHash: "none",
@@ -57,34 +58,22 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: false,
     },
     mainnet: {
-      url: process.env.INFURA_API_KEY
-        ? `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`
-        : process.env.NODE_URL || "",
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY || ""}`,
     },
     goerli: {
-      url: process.env.INFURA_API_KEY
-        ? `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`
-        : "",
+      url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY || ""}`,
     },
     arbitrum: {
-      url: process.env.INFURA_API_KEY
-        ? `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`
-        : "",
+      url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY || ""}`,
     },
     arbitrumSepolia: {
-      url: process.env.INFURA_API_KEY
-        ? `https://arbitrum-sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`
-        : "",
+      url: `https://arbitrum-sepolia.infura.io/v3/${process.env.INFURA_API_KEY || ""}`,
     },
     optimism: {
-      url: process.env.INFURA_API_KEY
-        ? `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`
-        : "",
+      url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY || ""}`,
     },
     optimismSepolia: {
-      url: process.env.INFURA_API_KEY
-        ? `https://optimism-sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`
-        : "",
+      url: `https://optimism-sepolia.infura.io/v3/${process.env.INFURA_API_KEY || ""}`,
     },
   },
   etherscan: {

@@ -1,52 +1,52 @@
-# Uniswap V3 Periphery
+# Primea V3 Periphery
 
-[![Tests](https://github.com/Uniswap/uniswap-v3-periphery/workflows/Tests/badge.svg)](https://github.com/Uniswap/uniswap-v3-periphery/actions?query=workflow%3ATests)
-[![Lint](https://github.com/Uniswap/uniswap-v3-periphery/workflows/Lint/badge.svg)](https://github.com/Uniswap/uniswap-v3-periphery/actions?query=workflow%3ALint)
+[![Tests](https://github.com/primeanetwork/primea-v3-periphery/workflows/Tests/badge.svg)](https://github.com/primeanetwork/primea-v3-periphery/actions?query=workflow%3ATests)
+[![Lint](https://github.com/primeanetwork/primea-v3-periphery/workflows/Lint/badge.svg)](https://github.com/primeanetwork/primea-v3-periphery/actions?query=workflow%3ALint)
 
-This repository contains the periphery smart contracts for the Uniswap V3 Protocol.
-For the lower level core contracts, see the [uniswap-v3-core](https://github.com/Uniswap/uniswap-v3-core)
-repository.
+This repository contains the governance-restricted periphery smart contracts for the Primea V3 Protocol.
+For the lower level core contracts, see the [primea-v3-core](https://github.com/primeanetwork/primea-v3-core) repository.
 
 ## Bug bounty
 
-This repository is subject to the Uniswap V3 bug bounty program,
+This repository is subject to the Primea Protocol bug bounty program,
 per the terms defined [here](./bug-bounty.md).
 
 ## Local deployment
 
-In order to deploy this code to a local testnet, you should install the npm package
-`@uniswap/v3-periphery`
-and import bytecode imported from artifacts located at
-`@uniswap/v3-periphery/artifacts/contracts/*/*.json`.
-For example:
+To deploy this code to a local testnet, install the npm package
+`@primea/v3-periphery` and import bytecode from artifacts located at
+`@primea/v3-periphery/artifacts/contracts/*/*.json`. For example:
 
 ```typescript
 import {
   abi as SWAP_ROUTER_ABI,
   bytecode as SWAP_ROUTER_BYTECODE,
-} from '@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json'
+} from '@primea/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json'
 
 // deploy the bytecode
 ```
 
-This will ensure that you are testing against the same bytecode that is deployed to
-mainnet and public testnets, and all Uniswap code will correctly interoperate with
-your local deployment.
+This ensures compatibility with bytecode deployed to the Primea mainnet and testnet environments.
+All Primea code will correctly interoperate with your local deployment.
 
 ## Using solidity interfaces
 
-The Uniswap v3 periphery interfaces are available for import into solidity smart contracts
-via the npm artifact `@uniswap/v3-periphery`, e.g.:
+The Primea V3 periphery interfaces are available for import into Solidity smart contracts
+via the npm artifact `@primea/v3-periphery`, e.g.:
 
 ```solidity
-import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+import '@primea/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 
 contract MyContract {
   ISwapRouter router;
 
-  function doSomethingWithSwapRouter() {
+  function doSomethingWithSwapRouter() public {
     // router.exactInput(...);
   }
 }
-
 ```
+
+## Licensing
+
+This repository is a governance-aligned fork of Primea V3-periphery. The original license (BUSL-1.1) expired April 1, 2024.
+Primea’s fork is now governed under the GPL v2.0 or later.

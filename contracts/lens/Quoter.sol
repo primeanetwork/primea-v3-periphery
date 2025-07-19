@@ -38,7 +38,7 @@ contract Quoter is IQuoter, PeripheryImmutableState {
         int256 amount0Delta,
         int256 amount1Delta,
         bytes memory path
-    ) external view override {
+    ) external view {
         require(amount0Delta > 0 || amount1Delta > 0); // swaps entirely within 0-liquidity regions are not supported
         (address tokenIn, address tokenOut, uint24 fee) = path.decodeFirstPool();
         CallbackValidation.verifyCallback(factory, tokenIn, tokenOut, fee);

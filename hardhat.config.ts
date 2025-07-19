@@ -1,8 +1,10 @@
-import '@nomiclabs/hardhat-ethers'
-import '@nomiclabs/hardhat-etherscan'
-import '@nomiclabs/hardhat-waffle'
-import 'hardhat-typechain'
-import 'hardhat-watcher'
+/// <reference types="node" />
+import { HardhatUserConfig } from "hardhat/config";
+import '@nomiclabs/hardhat-ethers';
+import '@nomiclabs/hardhat-etherscan';
+import '@nomiclabs/hardhat-waffle';
+import 'hardhat-typechain';
+import 'hardhat-watcher';
 
 const LOW_OPTIMIZER_COMPILER_SETTINGS = {
   version: '0.7.6',
@@ -16,7 +18,7 @@ const LOW_OPTIMIZER_COMPILER_SETTINGS = {
       bytecodeHash: 'none',
     },
   },
-}
+};
 
 const LOWEST_OPTIMIZER_COMPILER_SETTINGS = {
   version: '0.7.6',
@@ -30,7 +32,7 @@ const LOWEST_OPTIMIZER_COMPILER_SETTINGS = {
       bytecodeHash: 'none',
     },
   },
-}
+};
 
 const DEFAULT_COMPILER_SETTINGS = {
   version: '0.7.6',
@@ -44,9 +46,9 @@ const DEFAULT_COMPILER_SETTINGS = {
       bytecodeHash: 'none',
     },
   },
-}
+};
 
-export default {
+const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
@@ -80,12 +82,13 @@ export default {
     },
   },
   etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
   solidity: {
-    compilers: [DEFAULT_COMPILER_SETTINGS],
+    compilers: [
+      DEFAULT_COMPILER_SETTINGS,
+      { version: '0.8.30' } // for contracts with ^0.8.0 pragmas
+    ],
     overrides: {
       'contracts/NonfungiblePositionManager.sol': LOW_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/test/MockTimeNonfungiblePositionManager.sol': LOW_OPTIMIZER_COMPILER_SETTINGS,
@@ -101,4 +104,6 @@ export default {
       verbose: true,
     },
   },
-}
+};
+
+export default config;

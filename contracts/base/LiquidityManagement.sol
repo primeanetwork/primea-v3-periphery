@@ -94,10 +94,10 @@ abstract contract LiquidityManagement is IPrimeaV3MintCallback, PeripheryImmutab
     }
 
     function primeaV3FlashCallback(
-        uint256 fee0,
-        uint256 fee1,
-        bytes calldata data
-    ) external {
+        uint256 _fee0,
+        uint256 _fee1,
+        bytes calldata _data
+    ) external pure override {
         revert("primeaV3FlashCallback not implemented");
     }
 

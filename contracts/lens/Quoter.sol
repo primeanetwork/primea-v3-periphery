@@ -17,7 +17,7 @@ import '../libraries/CallbackValidation.sol';
 /// @notice Allows getting the expected amount out or amount in for a given swap without executing the swap
 /// @dev These functions are not gas efficient and should _not_ be called on chain. Instead, optimistically execute
 /// the swap and check the amounts in the callback.
-contract Quoter is IQuoter, IPrimeaV3SwapCallback, PeripheryImmutableState {
+contract Quoter is IQuoter, PeripheryImmutableState {
     using Path for bytes;
     using SafeCast for uint256;
 
@@ -34,7 +34,6 @@ contract Quoter is IQuoter, IPrimeaV3SwapCallback, PeripheryImmutableState {
         return IPrimeaV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, fee)));
     }
 
-    /// @inheritdoc IPrimeaV3SwapCallback
     function PrimeaV3SwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,

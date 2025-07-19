@@ -43,7 +43,12 @@ contract TestPrimeaV3Callee is IPrimeaV3SwapCallback, IPrimeaV3MintCallback {
         bytes calldata data
     ) external override {
         (address payer, address token0, address token1, uint24 fee) = abi.decode(data, (address, address, address, uint24));
-        require(msg.sender == PoolAddress.computeAddress(factory, token0, token1, fee), "Invalid pool caller");
+        PoolAddress.PoolKey memory key = PoolAddress.PoolKey({
+            token0: token0,
+            token1: token1,
+            fee: fee
+        });
+        require(msg.sender == PoolAddress.computeAddress(factory, key), "Invalid pool caller");
 
         if (amount0 > 0) {
             TransferHelper.safeTransferFrom(token0, payer, msg.sender, amount0);

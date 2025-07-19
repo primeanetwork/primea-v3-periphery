@@ -239,7 +239,7 @@ contract SwapRouter is
         uint256 fee0,
         uint256 fee1,
         bytes calldata data
-    ) external override {
+    ) external {
         revert("primeaV3FlashCallback not implemented");
     }
 

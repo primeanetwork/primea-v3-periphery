@@ -19,6 +19,15 @@ contract TestPrimeaV3Callee is IPrimeaV3SwapCallback, IPrimeaV3MintCallback {
         factory = _factory;
     }
 
+    // Utility: ABI encode data for callbacks
+    function _encode(address payer) internal view returns (bytes memory) {
+        // Replace these with actual token addresses and fee tier if needed
+        address token0 = address(0); // placeholder
+        address token1 = address(0); // placeholder
+        uint24 fee = 3000;           // placeholder
+        return abi.encode(payer, token0, token1, fee);
+    }
+
     // Swap variants
     function swapExact0For1(address pool, uint256 amount0In, address recipient, uint160 sqrtPriceLimitX96) external {
         IPrimeaV3Pool(pool).swap(recipient, true, amount0In.toInt256(), sqrtPriceLimitX96, _encode(msg.sender));
@@ -113,5 +122,4 @@ contract TestPrimeaV3Callee is IPrimeaV3SwapCallback, IPrimeaV3MintCallback {
             );
         }
     }
-
 }
